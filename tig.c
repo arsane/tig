@@ -3362,7 +3362,7 @@ static const char *diff_argv[SIZEOF_ARG] = {
 };
 #else
 static const char *diff_argv[SIZEOF_ARG] = {
-	"hg", "log", "-pr",
+	"hg", "log", "--style=/etc/git.slog", "-v",  "-pr",
 		"%(commit)",
                 NULL
 };
