@@ -3354,11 +3354,19 @@ static struct view_ops log_ops = {
 	pager_select,
 };
 
+#ifndef ENABLE_HG
 static const char *diff_argv[SIZEOF_ARG] = {
 	"git", "show", "--pretty=fuller", "--no-color", "--root",
 		"--patch-with-stat", "--find-copies-harder", "-C",
 		"%(diffargs)", "%(commit)", "--", "%(fileargs)", NULL
 };
+#else
+static const char *diff_argv[SIZEOF_ARG] = {
+	"hg", "log", "-pr",
+		"%(commit)",
+                NULL
+};
+#endif
 
 static bool
 diff_read(struct view *view, char *data)
