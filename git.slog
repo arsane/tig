@@ -1,0 +1,3 @@
+changeset = 'commit {node}\n{parents}author {author|person} <{author|email}> {date}\n\n    {desc|firstline}\n\n'
+parent = 'parent {node}\n'
+tag = '{node} {tag}\n'

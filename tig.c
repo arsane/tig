@@ -14,6 +14,7 @@
 #include "tig.h"
 #include "io.h"
 #include "graph.h"
+#define ENABLE_HG
 
 static void __NORETURN die(const char *err, ...);
 static void warn(const char *msg, ...);
@@ -358,7 +359,12 @@ static iconv_t opt_iconv_out		= ICONV_NONE;
 static char opt_search[SIZEOF_STR]	= "";
 static char opt_cdup[SIZEOF_STR]	= "";
 static char opt_prefix[SIZEOF_STR]	= "";
+#ifndef ENABLE_HG
 static char opt_git_dir[SIZEOF_STR]	= "";
+#else
+static char opt_git_dir[SIZEOF_STR]	= ".hg";
+#endif
+
 static signed char opt_is_inside_work_tree	= -1; /* set to TRUE or FALSE */
 static char opt_editor[SIZEOF_STR]	= "";
 static FILE *opt_tty			= NULL;
@@ -5763,11 +5769,21 @@ struct commit {
 	struct graph_canvas graph;	/* Ancestry chain graphics. */
 };
 
+#ifndef ENABLE_HG
 static const char *main_argv[SIZEOF_ARG] = {
 	"git", "log", "--no-color", "--pretty=raw", "--parents",
 		"--topo-order", "%(diffargs)", "%(revargs)",
 		"--", "%(fileargs)", NULL
 };
+#else
+static const char *main_argv[SIZEOF_ARG] = {
+	"hg", "log", "--style", "/etc/git.slog",
+                "%(diffargs)", "%(revargs)",
+		"--", "%(fileargs)",
+                NULL
+};
+#endif
+
 
 static bool
 main_draw(struct view *view, struct line *line, unsigned int lineno)
@@ -6869,9 +6885,11 @@ main(int argc, const char *argv[])
 	if (load_git_config() == ERR)
 		die("Failed to load repo config.");
 
+#ifndef ENABLE_HG
 	/* Require a git repository unless when running in pager mode. */
 	if (!opt_git_dir[0] && request != REQ_VIEW_PAGER)
 		die("Not a git repository");
+#endif
 
 	if (*opt_encoding && strcmp(codeset, "UTF-8")) {
 		opt_iconv_in = iconv_open("UTF-8", opt_encoding);
