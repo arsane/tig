@@ -6434,6 +6434,7 @@ read_ref(char *id, size_t idlen, char *name, size_t namelen, void *data)
 	bool head = FALSE;
 	int from = 0, to = refs_size - 1;
 
+#ifndef ENABLE_HG
 	if (!prefixcmp(name, "refs/tags/")) {
 		if (!suffixcmp(name, namelen, "^{}")) {
 			namelen -= 3;
@@ -6465,6 +6466,9 @@ read_ref(char *id, size_t idlen, char *name, size_t namelen, void *data)
 			name	 = opt_head;
 		}
 	}
+#else
+        tag = true;
+#endif
 
 	/* If we are reloading or it's an annotated tag, replace the
 	 * previous SHA1 with the resolved commit id; relies on the fact
@@ -6513,12 +6517,18 @@ read_ref(char *id, size_t idlen, char *name, size_t namelen, void *data)
 static int
 load_refs(void)
 {
+#ifndef ENABLE_HG
 	const char *head_argv[] = {
 		"git", "symbolic-ref", "HEAD", NULL
 	};
 	static const char *ls_remote_argv[SIZEOF_ARG] = {
 		"git", "ls-remote", opt_git_dir, NULL
 	};
+#else
+	static const char *ls_remote_argv[SIZEOF_ARG] = {
+		"hg", "log", "--style=/etc/git.tlog", NULL
+	};
+#endif
 	static bool init = FALSE;
 	size_t i;
 
@@ -6531,12 +6541,14 @@ load_refs(void)
 	if (!*opt_git_dir)
 		return OK;
 
+#ifndef ENABLE_HG
 	if (io_run_buf(head_argv, opt_head, sizeof(opt_head)) &&
 	    !prefixcmp(opt_head, "refs/heads/")) {
 		char *offset = opt_head + STRING_SIZE("refs/heads/");
 
 		memmove(opt_head, offset, strlen(offset) + 1);
 	}
+#endif
 
 	refs_head = NULL;
 	for (i = 0; i < refs_size; i++)
