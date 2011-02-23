@@ -1,4 +1,5 @@
 changeset = 'commit {node}\n{parents}author {author|person} <{author|email}> {date}\n\n    {desc|firstline}\n\n'
 changeset_verbose = 'commit {node}\nAuthor: {author|person} <{author|email}>\nAuthorDate: {date|isodate}\n{parents}\n    {desc|firstline}\n\n'
+changeset_quiet = '{tags}'
 parent = 'parent {node}\n'
-tag = '{node} {tag}\n'
+tag = '{node}\t{tag}\n'

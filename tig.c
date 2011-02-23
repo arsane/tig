@@ -6585,7 +6585,7 @@ load_refs(void)
 	};
 #else
 	static const char *ls_remote_argv[SIZEOF_ARG] = {
-		"hg", "log", "--style=/etc/git.tlog", NULL
+		"hg", "log","-q",  "--style=/etc/git.slog", NULL
 	};
 #endif
 	static bool init = FALSE;
