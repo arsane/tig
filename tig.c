@@ -3591,6 +3591,7 @@ push_tree_stack_entry(const char *name, unsigned long lineno)
  * 100644 blob f931e1d229c3e185caad4449bf5b66ed72462657	tig.c
  */
 
+#ifndef ENABLE_HG
 #define SIZEOF_TREE_ATTR \
 	STRING_SIZE("100644 blob f931e1d229c3e185caad4449bf5b66ed72462657\t")
 
@@ -3599,6 +3600,19 @@ push_tree_stack_entry(const char *name, unsigned long lineno)
 
 #define TREE_ID_OFFSET \
 	STRING_SIZE("100644 blob ")
+#else
+#define SIZEOF_TREE_ATTR \
+        STRING_SIZE("002c044cd0c34962a9181492208eab21f8453239 644   ")
+
+#define SIZEOF_TREE_MODE \
+	STRING_SIZE("644   ")
+
+#define TREE_ID_OFFSET \
+	STRING_SIZE("")
+
+#define TREE_MODE_OFFSET \
+        STRING_SIZE("002c044cd0c34962a9181492208eab21f8453239 ")
+#endif
 
 struct tree_entry {
 	char id[SIZEOF_REV];
@@ -3667,8 +3681,12 @@ tree_entry(struct view *view, enum line_type type, const char *path,
 	}
 
 	strncpy(entry->name, path, strlen(path));
-	if (mode)
+	if (mode) {
 		entry->mode = strtoul(mode, NULL, 8);
+#ifdef ENABLE_HG
+                entry->mode += 0100000;
+#endif
+        }
 	if (id)
 		string_copy_rev(entry->id, id);
 
@@ -3781,7 +3799,12 @@ tree_read(struct view *view, char *text)
 	}
 
 	type = text[SIZEOF_TREE_MODE] == 't' ? LINE_TREE_DIR : LINE_TREE_FILE;
+#ifndef ENABLE_HG
 	entry = tree_entry(view, type, path, text, text + TREE_ID_OFFSET);
+#else
+	entry = tree_entry(view, type, path, text + TREE_MODE_OFFSET,
+                                text + TREE_ID_OFFSET);
+#endif
 	if (!entry)
 		return FALSE;
 	data = entry->data;
@@ -3832,9 +3855,17 @@ tree_draw(struct view *view, struct line *line, unsigned int lineno)
 }
 
 static void
+#ifndef ENABLE_HG
 open_blob_editor(const char *id)
+#else
+open_blob_editor(const char *id, const char *name)
+#endif
 {
+#ifndef ENABLE_HG
 	const char *blob_argv[] = { "git", "cat-file", "blob", id, NULL };
+#else
+	const char *blob_argv[] = { "hg", "cat", "-r", id, name, NULL };
+#endif
 	char file[SIZEOF_STR] = "/tmp/tigblob.XXXXXX";
 	int fd = mkstemp(file);
 
@@ -3868,7 +3899,11 @@ tree_request(struct view *view, enum request request, struct line *line)
 		if (line->type != LINE_TREE_FILE) {
 			report("Edit only supported for files");
 		} else if (!is_head_commit(view->vid)) {
+#ifndef ENABLE_HG
 			open_blob_editor(entry->id);
+#else
+			open_blob_editor(ref_commit, entry->name);
+#endif
 		} else {
 			open_editor(opt_file);
 		}
@@ -3990,9 +4025,15 @@ tree_prepare(struct view *view)
 	return prepare_io(view, opt_cdup, view->ops->argv, TRUE);
 }
 
+#ifndef ENABLE_HG
 static const char *tree_argv[SIZEOF_ARG] = {
 	"git", "ls-tree", "%(commit)", "%(directory)", NULL
 };
+#else
+static const char *tree_argv[SIZEOF_ARG] = {
+	"hg", "manifest", "--debug", "%(commit)", NULL
+};
+#endif
 
 static struct view_ops tree_ops = {
 	"file",
@@ -4019,16 +4060,26 @@ blob_request(struct view *view, enum request request, struct line *line)
 {
 	switch (request) {
 	case REQ_EDIT:
+#ifndef ENABLE_HG
 		open_blob_editor(view->vid);
+#else
+		open_blob_editor(view->vid, NULL);
+#endif
 		return REQ_NONE;
 	default:
 		return pager_request(view, request, line);
 	}
 }
 
+#ifndef ENABLE_HG
 static const char *blob_argv[SIZEOF_ARG] = {
 	"git", "cat-file", "blob", "%(blob)", NULL
 };
+#else
+static const char *blob_argv[SIZEOF_ARG] = {
+	"hg", "cat", "-r", "%(commit)", "%(file)", NULL
+};
+#endif
 
 static struct view_ops blob_ops = {
 	"line",
