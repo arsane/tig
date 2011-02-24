@@ -3704,12 +3704,25 @@ tree_read_date(struct view *view, char *text, bool *read_date)
 		return TRUE;
 
 	} else if (!text) {
+#ifndef ENABLE_HG
 		char *path = *opt_path ? opt_path : ".";
 		/* Find next entry to process */
 		const char *log_file[] = {
 			"git", "log", "--no-color", "--pretty=raw",
 				"--cc", "--raw", view->id, "--", path, NULL
 		};
+#else
+                char commit[50];
+                string_format(commit, "%s:0", ref_commit);
+
+		const char *log_file[] = {
+			"hg", "log",
+                                "--debug",
+                                "--style=/etc/git.slog",
+                                "-r",  commit,
+				NULL
+		};
+#endif
 
 		if (!view->lines) {
 			tree_entry(view, LINE_TREE_HEAD, opt_path, NULL, NULL);
@@ -3738,11 +3751,14 @@ tree_read_date(struct view *view, char *text, bool *read_date)
 		if (!pos)
 			return TRUE;
 		text = pos + 1;
+
+#ifndef ENABLE_HG
 		if (*opt_path && !strncmp(text, opt_path, strlen(opt_path)))
 			text += strlen(opt_path);
 		pos = strchr(text, '/');
 		if (pos)
 			*pos = 0;
+#endif
 
 		for (i = 1; i < view->lines; i++) {
 			struct line *line = &view->line[i];

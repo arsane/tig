@@ -1,5 +1,10 @@
 changeset = 'commit {node}\n{parents}author {author|person} <{author|email}> {date}\n\n    {desc|firstline}\n\n'
 changeset_verbose = 'commit {node}\nAuthor: {author|person} <{author|email}>\nAuthorDate: {date|isodate}\n{parents}\n    {desc|firstline}\n\n'
+changeset_debug = 'author {author|person} <author|email> {date}\n{files}\n'
 changeset_quiet = '{tags}'
 parent = 'parent {node}\n'
 tag = '{node}\t{tag}\n'
+
+start_files = ''
+file = ':\t{file}\n'
+end_files = ''
