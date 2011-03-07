@@ -4138,9 +4138,12 @@ struct blame {
 static bool
 blame_open(struct view *view)
 {
+#ifndef ENABLE_HG
 	char path[SIZEOF_STR];
+#endif
 	size_t i;
 
+#ifndef ENABLE_HG
 	if (!view->prev && *opt_prefix) {
 		string_copy(path, opt_file);
 		if (!string_format(opt_file, "%s%s", opt_prefix, path))
@@ -4156,6 +4159,13 @@ blame_open(struct view *view)
 		    !start_update(view, blame_cat_file_argv, opt_cdup))
 			return FALSE;
 	}
+#else
+	const char *blame_cat_file_argv[] = {
+		"hg", "annotate", "-d", "-u", "-r", opt_ref, "-c", opt_file, NULL
+	};
+	if (!start_update(view, blame_cat_file_argv, opt_cdup))
+		return FALSE;
+#endif
 
 	/* First pass: remove multiple references to the same commit. */
 	for (i = 0; i < view->lines; i++) {
@@ -4362,9 +4372,9 @@ static bool
 blame_draw(struct view *view, struct line *line, unsigned int lineno)
 {
 	struct blame *blame = line->data;
+#ifndef ENABLE_HG
 	struct time *time = NULL;
 	const char *id = NULL, *author = NULL;
-
 	if (blame->commit && *blame->commit->filename) {
 		id = blame->commit->id;
 		author = blame->commit->author;
@@ -4382,6 +4392,7 @@ blame_draw(struct view *view, struct line *line, unsigned int lineno)
 
 	if (draw_lineno(view, lineno))
 		return TRUE;
+#endif
 
 	draw_text(view, LINE_DEFAULT, blame->text);
 	return TRUE;
