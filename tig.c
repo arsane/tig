@@ -3364,7 +3364,7 @@ static const char *diff_argv[SIZEOF_ARG] = {
 static const char *diff_argv[SIZEOF_ARG] = {
 	"hg", "log", "--style=/etc/git.slog", "-v",  "-pr",
 		"%(commit)",
-                NULL
+		NULL
 };
 #endif
 
@@ -3602,7 +3602,7 @@ push_tree_stack_entry(const char *name, unsigned long lineno)
 	STRING_SIZE("100644 blob ")
 #else
 #define SIZEOF_TREE_ATTR \
-        STRING_SIZE("002c044cd0c34962a9181492208eab21f8453239 644   ")
+	STRING_SIZE("002c044cd0c34962a9181492208eab21f8453239 644   ")
 
 #define SIZEOF_TREE_MODE \
 	STRING_SIZE("644   ")
@@ -3611,7 +3611,7 @@ push_tree_stack_entry(const char *name, unsigned long lineno)
 	STRING_SIZE("")
 
 #define TREE_MODE_OFFSET \
-        STRING_SIZE("002c044cd0c34962a9181492208eab21f8453239 ")
+	STRING_SIZE("002c044cd0c34962a9181492208eab21f8453239 ")
 #endif
 
 struct tree_entry {
@@ -3684,7 +3684,7 @@ tree_entry(struct view *view, enum line_type type, const char *path,
 	if (mode) {
 		entry->mode = strtoul(mode, NULL, 8);
 #ifdef ENABLE_HG
-                entry->mode += 0100000;
+		entry->mode += 0100000;
 #endif
         }
 	if (id)
@@ -3712,14 +3712,14 @@ tree_read_date(struct view *view, char *text, bool *read_date)
 				"--cc", "--raw", view->id, "--", path, NULL
 		};
 #else
-                char commit[50];
-                string_format(commit, "%s:0", ref_commit);
+		char commit[50];
+		string_format(commit, "%s:0", ref_commit);
 
 		const char *log_file[] = {
 			"hg", "log",
-                                "--debug",
-                                "--style=/etc/git.slog",
-                                "-r",  commit,
+				"--debug",
+				"--style=/etc/git.slog",
+				"-r",  commit,
 				NULL
 		};
 #endif
@@ -6553,7 +6553,7 @@ read_ref(char *id, size_t idlen, char *name, size_t namelen, void *data)
 		}
 	}
 #else
-        tag = true;
+	tag = true;
 #endif
 
 	/* If we are reloading or it's an annotated tag, replace the
